@@ -1,0 +1,11 @@
+keybind_mapart_load_from_shulker: true
+keybind_mapart_take_from_shulker: true
+keybind_mapart_copy_in_inventory: true
+
+mapart_placement_helper: true
+mapart_placement_helper_use_name: true
+mapart_placement_helper_use_image: true
+
+#mapart_database: false
+#max_clicks_per_second: 18
+#millis_between_clicks: 8
