@@ -21,8 +21,8 @@ public final class EvKeybind extends KeyBinding{
 		Main.LOGGER.info("Registered keybind: "+translationKey);
 	}
 
-	public EvKeybind(String translationKey, Runnable onPressed){this(translationKey, onPressed, ()->{}, a->false);}
-	public EvKeybind(String translationKey){this(translationKey, ()->{}, ()->{}, a->false);}
+	public EvKeybind(String translationKey, Runnable onPressed){this(translationKey, onPressed, ()->{}, _->false);}
+	public EvKeybind(String translationKey){this(translationKey, ()->{}, ()->{}, _->false);}
 
 	public EvKeybind(String translationKey, Runnable onPressed, Function<Screen, Boolean> allowInScreen){this(translationKey, onPressed, ()->{}, allowInScreen);}
 	public EvKeybind(String translationKey, Function<Screen, Boolean> allowInScreen){this(translationKey, ()->{}, ()->{}, allowInScreen);}

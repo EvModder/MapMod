@@ -6,7 +6,8 @@
 		"AccessorBoundKey",
 		"AccessorTimesPressed",
 		"MixinHandledScreen",
-		"MixinKeybinding"
+		"MixinKeybinding",
+		"MixinScreenHandler"
 	],
 	"injectors": {
 		"defaultRequire": 1

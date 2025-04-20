@@ -20,6 +20,7 @@ public class InventoryUtils{
 	{
 		if(clicks.isEmpty()){
 			Main.LOGGER.warn("executeClicks() called with an empty ClickEvent list");
+			onComplete.run();
 			return;
 		}
 		if(MAX_CLICKS_PER_SECOND < 1 || MILLIS_BETWEEN_CLICKS < 0){
@@ -61,6 +62,7 @@ public class InventoryUtils{
 			@Override public void run(){
 				if(clicksInLastSecond < MAX_CLICKS_PER_SECOND && canProceed.apply(clicks.peek())){
 					ClickEvent click = clicks.remove();
+					//Main.LOGGER.info("click: "+click.syncId+","+click.slotId+","+click.button+","+click.actionType);
 					client.interactionManager.clickSlot(click.syncId, click.slotId, click.button, click.actionType, client.player);
 					if(clicks.isEmpty()){cancel(); onComplete.run(); return;}
 					++clicksInLastSecond;

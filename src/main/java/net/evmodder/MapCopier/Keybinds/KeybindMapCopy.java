@@ -16,7 +16,7 @@ public final class KeybindMapCopy{
 	private final boolean BARF_CLOGS_FOR_MAP_COPY = false, PREFER_HOTBAR_SWAPS = true, FORCE_HOTBAR_SWAPS = false, COPY_PRECISE_64 = true;
 	private static boolean ongoingCopy;
 	private static long lastCopy;
-	private static final long copyCooldown = 250L;
+	private static final long copyCooldown = 250l;
 
 	private boolean isMapArt(ItemStack stack){
 		if(stack == null || stack.isEmpty()) return false;
@@ -82,11 +82,11 @@ public final class KeybindMapCopy{
 	private void copyMapArtInInventory(final int MILLIS_BETWEEN_CLICKS, Boolean bulk){
 		if(ongoingCopy){Main.LOGGER.warn("MapCopy: Already ongoing"); return;}
 		//
+		MinecraftClient client = MinecraftClient.getInstance();
+		if(!(client.currentScreen instanceof InventoryScreen is)){Main.LOGGER.warn("MapCopy: not in InventoryScreen"); return;}
 		final long ts = System.currentTimeMillis();
 		if(ts - lastCopy < copyCooldown){Main.LOGGER.warn("MapCopy: In cooldown"); return;}
 		lastCopy = ts;
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(!(client.currentScreen instanceof InventoryScreen is)){Main.LOGGER.warn("MapCopy: not in InventoryScreen"); return;}
 		//
 		ArrayDeque<ClickEvent> clicks = new ArrayDeque<>();
 		PlayerScreenHandler psh = is.getScreenHandler();
@@ -169,7 +169,8 @@ public final class KeybindMapCopy{
 		if(!bulk && blankMaps < numMapArtsToCopy){Main.LOGGER.warn("MapCopy: not enough blank maps, need:"+numMapArtsToCopy+", have:"+blankMaps); return;}
 		//
 		// Move blank maps to the crafting 2x2
-		currentBlankMapsInCrafter = getBlankMapsInto2x2(psh, hotbarButton, blankMapCraftingSlot, /*needed=*/1, currentBlankMapsInCrafter, clicks, blankMapStackableCapacity);
+		currentBlankMapsInCrafter =
+				getBlankMapsInto2x2(psh, hotbarButton, blankMapCraftingSlot, /*needed=*/1, currentBlankMapsInCrafter, clicks, blankMapStackableCapacity);
 		if(currentBlankMapsInCrafter < 1){Main.LOGGER.warn("No blank maps found in inventory"); return;}
 		Main.LOGGER.info("Initial blank maps in crafter: "+currentBlankMapsInCrafter);
 		//
@@ -190,7 +191,8 @@ public final class KeybindMapCopy{
 			if(iHotbarButton != -1 && (!bulk || canBulkCopy || FORCE_HOTBAR_SWAPS) && (iHotbarButton != 40 || stack.getCount() == 1)){
 				int amountToCraft = bulk && canBulkCopy ? stack.getCount() : 1;
 				if(bulk && currentBlankMapsInCrafter < amountToCraft){
-					currentBlankMapsInCrafter = getBlankMapsInto2x2(psh, -1, blankMapCraftingSlot, amountToCraft, currentBlankMapsInCrafter, clicks, blankMapStackableCapacity);
+					currentBlankMapsInCrafter =
+							getBlankMapsInto2x2(psh, -1, blankMapCraftingSlot, amountToCraft, currentBlankMapsInCrafter, clicks, blankMapStackableCapacity);
 					if(currentBlankMapsInCrafter < 1){Main.LOGGER.info("MapCopyBulk(swaps): Ran out of blank maps"); break;}
 					amountToCraft = Math.min(amountToCraft, currentBlankMapsInCrafter);
 				}
@@ -211,7 +213,8 @@ public final class KeybindMapCopy{
 				boolean clickBulk = COPY_PRECISE_64 && bulk && !fullBulk && !halfBulk/* && stack.getCount() > stack.getMaxCount() - stack.getCount()/2*/;//math already implied
 				int amountToCraft = fullBulk ? stack.getCount() : halfBulk ? stack.getCount()/2 : clickBulk ? stack.getMaxCount()-stack.getCount() : 1;
 				if(currentBlankMapsInCrafter < amountToCraft){ // should only occur in bulk mode
-					currentBlankMapsInCrafter = getBlankMapsInto2x2(psh, -1, blankMapCraftingSlot, amountToCraft, currentBlankMapsInCrafter, clicks, blankMapStackableCapacity);
+					currentBlankMapsInCrafter =
+							getBlankMapsInto2x2(psh, -1, blankMapCraftingSlot, amountToCraft, currentBlankMapsInCrafter, clicks, blankMapStackableCapacity);
 					if(currentBlankMapsInCrafter < 1){Main.LOGGER.info("MapCopyBulk: Ran out of blank maps"); break;}
 					if(currentBlankMapsInCrafter < amountToCraft){ // Implies amountToCraft > currentBlankMapsInCrafter
 						if(fullBulk){amountToCraft = stack.getCount()/2; fullBulk=false; halfBulk=true;}
@@ -251,7 +254,7 @@ public final class KeybindMapCopy{
 			clicks.add(new ClickEvent(blankMapCraftingSlot, 0, SlotActionType.THROW)); // throw leftovers if quick_move fails
 		}
 		ongoingCopy = true;
-		InventoryUtils.executeClicks(client, clicks, MILLIS_BETWEEN_CLICKS, /*MAX_CLICKS_PER_SECOND=*/80, a->true, ()->{
+		InventoryUtils.executeClicks(client, clicks, MILLIS_BETWEEN_CLICKS, /*MAX_CLICKS_PER_SECOND=*/80, _->true, ()->{
 			Main.LOGGER.info("MapCopy: DONE");
 			ongoingCopy = false;
 		});

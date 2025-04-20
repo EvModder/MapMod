@@ -3,7 +3,7 @@
 	"id": "mapcopier",
 	"version": "${version}",
 	"name": "MapCopier",
-	"description": "MapCopier module from the KeyBound client",
+	"description": "Select MapArt modules from the KeyBound client",
 	"authors": [ "EvModder" ],
 	"contact": {
 		"homepage": "https://legacy.curseforge.com/minecraft/mc-mods/keybound",

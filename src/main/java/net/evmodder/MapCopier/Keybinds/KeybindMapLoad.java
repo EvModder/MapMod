@@ -20,12 +20,8 @@ public final class KeybindMapLoad{
 		if(!Registries.ITEM.getId(stack.getItem()).getPath().equals("filled_map")) return false;
 		return FilledMapItem.getMapState(stack, world) == null;
 	}
-//	private boolean isLoadedMapArt(World world, ItemStack stack){
-//		if(stack == null || stack.isEmpty()) return false;
-//		if(!Registries.ITEM.getId(stack.getItem()).getPath().equals("filled_map")) return false;
-//		return FilledMapItem.getMapState(stack, world) != null;
-//	}
 
+	//TODO: Consider shift-clicks instead of hotbar swaps (basically, MapMove but only for unloaded maps, and keep track of which)
 	private boolean ongoingLoad;
 	private long lastLoad;
 	private final long loadCooldown = 500L;

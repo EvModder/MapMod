@@ -59,7 +59,7 @@ public final class KeybindMapStealStore{
 		}
 
 		InventoryUtils.executeClicks(client, clicks, MILLIS_BETWEEN_CLICKS, /*MAX_CLICKS_PER_SECOND=*/27,
-				a->true,
+				_->true,
 				()->{
 					Main.LOGGER.info("Map SS: DONE!");
 					ongoingStealStore = false;
