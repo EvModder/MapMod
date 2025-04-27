@@ -6,6 +6,7 @@
 		"AccessorBoundKey",
 		"AccessorTimesPressed",
 		"MixinHandledScreen",
+		"MixinItemFrameRenderer",
 		"MixinKeybinding",
 		"MixinScreenHandler"
 	],
