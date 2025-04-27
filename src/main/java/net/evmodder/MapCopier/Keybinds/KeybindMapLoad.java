@@ -5,58 +5,72 @@ import net.evmodder.MapCopier.Main;
 import net.evmodder.MapCopier.Keybinds.InventoryUtils.ClickEvent;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.ShulkerBoxScreen;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.screen.ShulkerBoxScreenHandler;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
+import net.minecraft.client.gui.screen.ingame.ShulkerBoxScreen;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.world.World;
 
 public final class KeybindMapLoad{
-
 	private boolean isUnloadedMapArt(World world, ItemStack stack){
 		if(stack == null || stack.isEmpty()) return false;
 		if(!Registries.ITEM.getId(stack.getItem()).getPath().equals("filled_map")) return false;
 		return FilledMapItem.getMapState(stack, world) == null;
 	}
 
+	private boolean isShulkerBox(ItemStack stack){
+		return !stack.isEmpty() && Registries.ITEM.getId(stack.getItem()).getPath().endsWith("shulker_box");
+	}
+
+	private int getNextUsableHotbarButton(MinecraftClient client, int hb){
+		while(++hb < 9 && client.currentScreen instanceof ShulkerBoxScreen && isShulkerBox(client.player.getInventory().getStack(hb)));
+		return hb;
+	}
+
 	//TODO: Consider shift-clicks instead of hotbar swaps (basically, MapMove but only for unloaded maps, and keep track of which)
 	private boolean ongoingLoad;
 	private long lastLoad;
 	private final long loadCooldown = 500L;
-	private final void loadMapArtFromShulker(final int MAX_CLICKS_PER_SECOND){
+	private final void loadMapArtFromContainer(){
 		if(ongoingLoad){Main.LOGGER.warn("MapLoad cancelled: Already ongoing"); return;}
+		//
+		MinecraftClient client = MinecraftClient.getInstance();
+		if(!(client.currentScreen instanceof HandledScreen hs)){Main.LOGGER.warn("MapLoad cancelled: not in HandledScreen"); return;}
 		//
 		final long ts = System.currentTimeMillis();
 		if(ts - lastLoad < loadCooldown){Main.LOGGER.warn("MapLoad cancelled: Cooldown"); return;}
 		lastLoad = ts;
 		//
-		MinecraftClient client = MinecraftClient.getInstance();
-		if(!(client.currentScreen instanceof ShulkerBoxScreen sbs)){Main.LOGGER.warn("MapLoad cancelled: not in ShulkerBoxScreen"); return;}
-		//
-		ShulkerBoxScreenHandler sh = sbs.getScreenHandler();
+		ScreenHandler sh = hs.getScreenHandler();
 		int numToLoad = 0;
-		for(int i=0; i<27; ++i) if(isUnloadedMapArt(client.player.clientWorld, sh.getSlot(i).getStack())) ++numToLoad;
+		for(int i=0; i<sh.slots.size(); ++i) if(isUnloadedMapArt(client.player.clientWorld, sh.getSlot(i).getStack())) ++numToLoad;
 		if(numToLoad == 0){Main.LOGGER.warn("MapLoad cancelled: none to load"); return;}
 		//
-		ongoingLoad = true;
-		int hotbarButton = 0;
-		int[] putBackSlots = new int[Math.min(9, numToLoad)];
+		int hotbarButton = getNextUsableHotbarButton(client, -1);
+		if(hotbarButton == 9){Main.LOGGER.warn("MapLoad cancelled: in shulker, and hotbar is full of shulkers"); return;}
+		//
+		int[] putBackSlots = new int[9];
+		for(int i=0; i<putBackSlots.length; ++i) putBackSlots[i] = -1;
+
 		ArrayDeque<ClickEvent> clicks = new ArrayDeque<>();
-		for(int i=0; i<27 && numToLoad > 0; ++i){
-			ItemStack stack = sh.getSlot(i).getStack();
-			if(!isUnloadedMapArt(client.player.clientWorld, stack)) continue;
-			putBackSlots[hotbarButton] = i;
+		for(int i=0; i<sh.slots.size() && numToLoad > 0; ++i){
+			if(!isUnloadedMapArt(client.player.clientWorld, sh.getSlot(i).getStack())) continue;
 			clicks.add(new ClickEvent(sh.syncId, i, hotbarButton, SlotActionType.SWAP));
-			++hotbarButton;
-			if(hotbarButton == 9 || hotbarButton == numToLoad){
-				for(int j=0; j<hotbarButton; ++j) clicks.add(new ClickEvent(sh.syncId, putBackSlots[j], j, SlotActionType.SWAP));
-				numToLoad -= hotbarButton;
-				hotbarButton = 0;
+			putBackSlots[hotbarButton] = i;
+			--numToLoad;
+
+			hotbarButton = getNextUsableHotbarButton(client, hotbarButton);
+			if(hotbarButton == 9 || numToLoad == 0){
+				for(int j=0; j<hotbarButton; ++j) if(putBackSlots[j] != -1) clicks.add(new ClickEvent(sh.syncId, putBackSlots[j], j, SlotActionType.SWAP));
+				hotbarButton = getNextUsableHotbarButton(client, -1);
 			}
 		}
-		InventoryUtils.executeClicks(client, clicks, /*MILLIS_BETWEEN_CLICKS=*/0, MAX_CLICKS_PER_SECOND,
+		ongoingLoad = true;
+		InventoryUtils.executeClicks(client, clicks, 20, 0,
 				c->!isUnloadedMapArt(client.player.clientWorld, client.player.getInventory().getStack(c.button())),
 				()->{
 					Main.LOGGER.info("MapLoad: DONE!");
@@ -64,11 +78,8 @@ public final class KeybindMapLoad{
 				});
 	}
 
-	public KeybindMapLoad(int MAX_CLICKS_PER_SECOND){
-		if(MAX_CLICKS_PER_SECOND < 9){
-			Main.LOGGER.error("max_clicks_per_second value is set too low, disabling MapArtLoad keybind");
-			return;
-		}
-		KeyBindingHelper.registerKeyBinding(new EvKeybind("mapart_load_data", ()->loadMapArtFromShulker(MAX_CLICKS_PER_SECOND), s->s instanceof ShulkerBoxScreen));
+	public KeybindMapLoad(){
+		KeyBindingHelper.registerKeyBinding(new EvKeybind("mapart_load_data", ()->loadMapArtFromContainer(),
+				s->s instanceof InventoryScreen == false));
 	}
 }

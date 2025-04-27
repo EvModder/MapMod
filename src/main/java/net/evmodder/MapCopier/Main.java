@@ -18,6 +18,7 @@ import java.util.HashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.evmodder.MapCopier.Keybinds.InventoryUtils;
 import net.evmodder.MapCopier.Keybinds.KeybindMapCopy;
 import net.evmodder.MapCopier.Keybinds.KeybindMapLoad;
 import net.evmodder.MapCopier.Keybinds.KeybindMapStealStore;
@@ -33,6 +34,7 @@ public class Main implements ClientModInitializer{
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	private static HashMap<String, String> config;
+	public static InventoryUtils inventoryUtils;
 
 	private void loadConfig(){
 		//=================================== Parsing config into a map
@@ -71,11 +73,15 @@ public class Main implements ClientModInitializer{
 		boolean keybindMapArtLoad=false, keybindMapArtCopy=false, keybindMapArtTake=false;
 //		int clicks_per_gt=36, millis_between_clicks=50;
 		boolean mapPlaceHelper=false, mapPlaceHelperByName=false, mapPlaceHelperByImg=false;
+		int clicksInDuration = 190, durationTicks = 75;
 
 		//config.forEach((key, value) -> {
 		for(String key : config.keySet()){
 			String value = config.get(key);
 			switch(key){
+				case "limiter_clicks_in_duration": clicksInDuration = Integer.parseInt(value); break;
+				case "limiter_duration_ticks": durationTicks = Integer.parseInt(value); break;
+
 				case "keybind_mapart_load_from_shulker": keybindMapArtLoad = !value.equalsIgnoreCase("false"); break;
 				case "keybind_mapart_take_from_shulker": keybindMapArtTake = !value.equalsIgnoreCase("false"); break;
 				case "keybind_mapart_copy_in_inventory": keybindMapArtCopy = !value.equalsIgnoreCase("false"); break;
@@ -88,8 +94,9 @@ public class Main implements ClientModInitializer{
 					LOGGER.warn("Unrecognized config setting: "+key);
 			}
 		}
-		if(keybindMapArtLoad) new KeybindMapLoad(/*MAX_CLICKS_PER_SECOND=*/999);
-		if(keybindMapArtCopy) new KeybindMapCopy(/*MILLIS_BETWEEN_CLICKS=*/10);
+		inventoryUtils = new InventoryUtils(clicksInDuration, durationTicks);
+		if(keybindMapArtLoad) new KeybindMapLoad();
+		if(keybindMapArtCopy) new KeybindMapCopy();
 		if(keybindMapArtTake) new KeybindMapStealStore(/*MILLIS_BETWEEN_CLICKS=*/10);
 		if(mapPlaceHelper) new MapHandRestock(mapPlaceHelperByName, mapPlaceHelperByImg);
 	}
