@@ -1,0 +1,10 @@
+{
+	"key.categories.mapmod": "MapMod",
+
+	"key.keybound.mapart_copy": "MapArt Copy",
+	"key.keybound.mapart_copy_bulk": "MapArt Copy-Bulk",
+	"key.keybound.mapart_load": "MapArt Load",
+	"key.keybound.mapart_move": "MapArt Take/Place",
+	"key.keybound.mapart_bundle": "MapArt Take/Stow (Bundle)",
+	"key.keybound.smart_inventory_craft": "Auto-craft in the 2x2"
+}

@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "net.evmodder.MapMod.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"AccessorBoundKey",
+		"AccessorProjectileEntity",
+		"AccessorTimesPressed",
+		"MixinClientPlayerInteractionManager",
+		"MixinHandledScreen",
+		"MixinInGameHud",
+		"MixinItemFrameRenderer",
+		"MixinKeyBinding",
+		"MixinScreenHandler"
+	],
+	"injectors": { "defaultRequire": 1 }
+}

@@ -1,30 +1,25 @@
 {
 	"schemaVersion": 1,
-	"id": "mapcopier",
+	"id": "mapmod",
 	"version": "${version}",
-	"name": "MapCopier",
-	"description": "Select MapArt modules from the KeyBound client",
+	"name": "MapMod",
+	"description": "Extracted map-related utils from Ev's KeyBound mod",
 	"authors": [ "EvModder" ],
 	"contact": {
-		"homepage": "https://legacy.curseforge.com/minecraft/mc-mods/keybound",
-		"sources": "https://github.com/EvModder/KeyBound",
-		"issues": "https://github.com/EvModder/KeyBound/issues"
+		"homepage": "https://legacy.curseforge.com/minecraft/mc-mods/mapmod",
+		"sources": "https://github.com/EvModder/MapMod",
+		"issues": "https://github.com/EvModder/MapMod/issues"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/keybound/icon.png",
+	"icon": "assets/mapmod/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"client": [
-			"net.evmodder.MapCopier.Main"
-		]
+		"client": [ "net.evmodder.MapMod.Main" ]
 	},
-	"mixins": [
-		"mapcopier.mixins.json"
-	],
+	"mixins": [ "mapmod.mixins.json" ],
 	"depends": {
-		"fabricloader": ">=0.15.11",
+		"fabricloader": ">=${loader_version}",
 		"minecraft": "~1.21",
-		"java": ">=21",
 		"fabric-api": "*",
 		"fabric-key-binding-api-v1": "*"
 	},
