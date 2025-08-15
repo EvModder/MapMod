@@ -3,6 +3,7 @@ package net.evmodder.MapMod.mixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.evmodder.MapMod.Main;
 import net.evmodder.MapMod.MapGroupUtils;
@@ -10,7 +11,10 @@ import net.evmodder.MapMod.MapRelationUtils;
 import net.evmodder.MapMod.Events.ItemFrameHighlightUpdater;
 import net.evmodder.MapMod.Events.ItemFrameHighlightUpdater.Highlight;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.ItemFrameEntityRenderer;
+import net.minecraft.client.render.entity.state.ItemFrameEntityRenderState;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.item.FilledMapItem;
@@ -86,5 +90,10 @@ public class MixinItemFrameRenderer<T extends ItemFrameEntity>{
 			}
 			else cir.setReturnValue(stack.getName().copy().withColor(Main.MAP_COLOR_MULTI_IFRAME));
 		}
+	}
+
+	@Inject(method="render", at=@At("HEAD"))
+	private void disableItemFrameFrameRenderingWhenHoldingMaps(ItemFrameEntityRenderState ifers, MatrixStack _0, VertexConsumerProvider _1, int _2, CallbackInfo _3) {
+		ifers.invisible |= (Main.invisItemFramesWithMaps && ifers.mapId != null);
 	}
 }

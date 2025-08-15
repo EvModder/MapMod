@@ -27,7 +27,7 @@ public class Main implements ClientModInitializer{
 	private static HashMap<String, String> config;
 
 	public static ClickUtils clickUtils;
-	public static boolean mapHighlightHUD, mapHighlightIFrame, mapHighlightHandledScreen, skipTransparentMaps, skipMonoColorMaps;
+	public static boolean mapHighlightHUD, mapHighlightIFrame, mapHighlightHandledScreen, skipTransparentMaps, skipMonoColorMaps, invisItemFramesWithMaps=true;
 
 	public static int MAP_COLOR_UNLOADED = 13150930;
 	public static int MAP_COLOR_UNLOCKED = 14692709;
@@ -91,6 +91,7 @@ public class Main implements ClientModInitializer{
 //				case "max_clicks_per_tick": clicks_per_gt = Integer.parseInt(value); break;
 //				case "millis_between_clicks": millis_between_clicks = Integer.parseInt(value); break;
 
+				case "invis_itemframes_with_maps": invisItemFramesWithMaps = !value.equalsIgnoreCase("false"); break;
 				case "map_highlight_in_tooltip": mapHighlightTooltip = !value.equalsIgnoreCase("false"); break;
 				case "map_highlight_in_hotbarhud": mapHighlightHUD = !value.equalsIgnoreCase("false"); break;
 				case "map_highlight_in_itemframe": mapHighlightIFrame = !value.equalsIgnoreCase("false"); break;
