@@ -22,13 +22,14 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.math.Fraction;
 import org.lwjgl.glfw.GLFW;
 
 public final class KeybindMapCopy{
-	private static long lastCopy;
-	private static final long copyCooldown = 250l;
+	private long lastCopy;
+	private final long copyCooldown = 250l;
 	private final boolean PRESERVE_EXACT_POS = true;
 	private final ItemStack EMPTY_ITEM = new ItemStack(Items.AIR);
 	final static int WAITING_FOR_CLICKS_COLOR = 15764490;
@@ -153,32 +154,45 @@ public final class KeybindMapCopy{
 			BundleContentsComponent contents = slots[i].get(DataComponentTypes.BUNDLE_CONTENTS);
 			return contents != null && contents.stream().allMatch(s -> s.getItem() == Items.FILLED_MAP);
 		}).toArray();
+		final BundleContentsComponent[] bundles = Arrays.stream(slotsWithBundles)
+				.mapToObj(i -> slots[i].get(DataComponentTypes.BUNDLE_CONTENTS)).toArray(BundleContentsComponent[]::new);
+		final int SRC_BUNDLES = (int)Arrays.stream(bundles).filter(Predicate.not(BundleContentsComponent::isEmpty)).count();
+		int emptyBundles = bundles.length - SRC_BUNDLES;
+
 		HashMap<Integer, List<Integer>> bundlesToCopy = new HashMap<>(); // source bundle -> destination bundles
-		int storageBundles = 0;
+//		int storageBundles = 0;
 		int emptyMapsNeeded = 0;
 //		boolean multiMapCopy = false;
 		for(int i=0; i<slotsWithBundles.length; ++i){
 			final int s1 = slotsWithBundles[i];
-			BundleContentsComponent contents = slots[s1].get(DataComponentTypes.BUNDLE_CONTENTS);
-			if(contents.isEmpty()) continue;
+			if(bundles[s1].isEmpty()) continue;
 			ArrayList<Integer> copyDests = new ArrayList<>();
-			++storageBundles;
+//			++storageBundles;
 			final String name1 = slots[s1].getCustomName() == null ? null : slots[s1].getCustomName().getString();
-			Main.LOGGER.info("looking for dest bundles for "+slots[s1].getName().getString()+" in slot "+s1);
-			for(int j=0; j<slotsWithBundles.length; ++j){
+//			Main.LOGGER.info("looking for dest bundles for "+slots[s1].getName().getString()+" in slot "+s1);
+			for(int j=0; j<slotsWithBundles.length && emptyBundles>1; ++j){
 				final int s2 = slotsWithBundles[j];
-				if(!slots[s2].get(DataComponentTypes.BUNDLE_CONTENTS).isEmpty()) continue;
-				Main.LOGGER.info("empty bundle in slot "+s2);
+				if(!bundles[s2].isEmpty()) continue;
+//				Main.LOGGER.info("empty bundle in slot "+s2);
 				if(name1 != null){
 					final String name2 = slots[s2].getCustomName() == null ? null : slots[s2].getCustomName().getString();
-					if(name1.equals(name2)) copyDests.add(s2);
+					if(name1.equals(name2));// copyDests.add(s2);--emptyBundles;
+					else continue;
 				}
-				else if(slots[s1].getItem() == slots[s2].getItem()) copyDests.add(s2);
+				else if(slots[s1].getItem() == slots[s2].getItem());// copyDests.add(s2);--emptyBundles;
+				else if(SRC_BUNDLES == 1);// copyDests.add(s2);--emptyBundles;
+				else continue;
+				copyDests.add(s2);
+				--emptyBundles;
 			}
-			if(copyDests.isEmpty()){Main.LOGGER.warn("MapCopyBundle: Could not determine destination bundle"); return;}
-			storageBundles += copyDests.size();
+			if(copyDests.isEmpty()){
+				if(emptyBundles == 1) Main.LOGGER.warn("MapCopyBundle: Could not find an auxiliary bundle");
+				else Main.LOGGER.warn("MapCopyBundle: Could not determine destination bundles");
+				return;
+			}
+//			storageBundles += copyDests.size();
 			bundlesToCopy.put(s1, copyDests);
-			emptyMapsNeeded += getNumStored(contents.getOccupancy())*copyDests.size();
+			emptyMapsNeeded += getNumStored(bundles[s1].getOccupancy())*copyDests.size();
 //			multiMapCopy |= contents.stream().anyMatch(s -> s.getCount() > 1);
 		}
 		if(totalEmptyMaps < emptyMapsNeeded){
@@ -187,7 +201,7 @@ public final class KeybindMapCopy{
 			return;
 		}
 		if(bundlesToCopy.isEmpty()){Main.LOGGER.warn("MapCopyBundle: No bundles found to copy"); return;}
-		if(storageBundles == slotsWithBundles.length){Main.LOGGER.warn("MapCopyBundle: Could not find an auxiliary bundle"); return;}
+//		if(storageBundles == slotsWithBundles.length){Main.LOGGER.warn("MapCopyBundle: Could not find an auxiliary bundle"); return;}
 
 		HashSet<Integer> unusedBundles = new HashSet<Integer>();
 		for(int i : slotsWithBundles) unusedBundles.add(i);
@@ -198,15 +212,14 @@ public final class KeybindMapCopy{
 		Main.LOGGER.info("MapCopyBundle: Intermediary bundle slot "+tempBundleSlot+", "+slots[tempBundleSlot].getName().getString());
 
 		for(int k : bundlesToCopy.keySet()){
-			Main.LOGGER.info("MapCopyBundle: Copying map bundle in slot "+k+", "+slots[k].getName().getString()+" to slots: "+bundlesToCopy.get(k));
-			BundleContentsComponent contents = slots[k].get(DataComponentTypes.BUNDLE_CONTENTS);
-			for(int i=0; i<contents.size(); ++i){
+//			Main.LOGGER.info("MapCopyBundle: Copying map bundle in slot "+k+", "+slots[k].getName().getString()+" to slots: "+bundlesToCopy.get(k));
+			for(int i=0; i<bundles[k].size(); ++i){
 				clicks.add(new ClickEvent(k, 1, SlotActionType.PICKUP)); // Take last map from src bundle
 				clicks.add(new ClickEvent(tempBundleSlot, 0, SlotActionType.PICKUP)); // Place map in temp bundle
 			}
-			Main.LOGGER.info("MapCopyBundle: Move to intermediary bundle complete, beginning copy");
-			for(int i=0; i<contents.size(); ++i){
-				final int count = contents.get(i).getCount();
+//			Main.LOGGER.info("MapCopyBundle: Move to intermediary bundle complete, beginning copy");
+			for(int i=0; i<bundles[k].size(); ++i){
+				final int count = bundles[k].get(i).getCount();
 				clicks.add(new ClickEvent(tempBundleSlot, 1, SlotActionType.PICKUP)); // Take last map from temp bundle
 				clicks.add(new ClickEvent(INPUT_START+1, 0, SlotActionType.PICKUP)); // Place in crafter
 				int leftoverMapSlot = INPUT_START+1;
@@ -442,10 +455,12 @@ public final class KeybindMapCopy{
 				// Don't start individual copy operation unless we can fully knock it out (unless impossible to do in 1 go)
 				final Integer clicksNeeded = reserveClicks.get(c);
 				if(clicksNeeded == null || clicksNeeded <= Main.clickUtils.MAX_CLICKS - Main.clickUtils.addClick(null)) return true;
-				client.player.sendMessage(Text.literal("MapCopy: Waiting for clicks...").withColor(WAITING_FOR_CLICKS_COLOR), true);
+				client.player.sendMessage(Text.literal("MapCopy: Waiting for clicks... ("+clicks.size()+")").withColor(WAITING_FOR_CLICKS_COLOR), true);
 				return false;
 			},
-			()->Main.LOGGER.info("MapCopy: DONE")
+			()->{
+				Main.LOGGER.info("MapCopy: DONE");
+			}
 		);
 	}
 

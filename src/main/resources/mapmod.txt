@@ -1,22 +1,32 @@
-# Config file for MapMod
+# Config for "KeyBound" by EvModder
+# This is a Mapart-specific version
+
+
+#========== Keybinds ==========#
+keybind.mapart.copy: true
+keybind.mapart.load: true
+keybind.mapart.move.bundle: true
+keybind.mapart.move.bundle.reverse: false
+keybind.mapart.move.3x9: true
+keybind.mapart.move.3x9.ignore_air_pockets: false
+
 
 #========== MapArt Tools ==========#
+mapart_placement_helper: true #TODO: also support placing sequential shulker boxes
+mapart_placement_helper_use_name: true
+mapart_placement_helper_use_image: true
+
 # 2b2t will kick you for sending 200+ clicks in 70 ticks (Updated: 2025-04-27)
 # 2b2t will kick you for sending 80+ clicks in 80 ticks (Updated: 2025-05-15, ty IceTank)
 # Note: I recommend setting it to 90 ticks (if u have ping issues like me)
 limiter_clicks_in_duration: 78
 limiter_duration_ticks: 90
 
-keybind.mapart.copy: true
-keybind.mapart.load: true
-keybind.mapart.move.bundle: true
-keybind.mapart.move.3x9: true
-keybind.mapart.move.3x9.ignore_air_pockets: false
+# W.I.P. feature for caching map preview in shulker/bundles in inv/echest
+map_state_cache: false
 
-mapart_placement_helper: true #TODO: also support placing sequential shulker boxes
-mapart_placement_helper_use_name: true
-mapart_placement_helper_use_image: true
 
+#========== Commands ==========#
 mapart_group_command: true
 mapart_group_include_unlocked: true
 mapart_generate_img_command: true
@@ -25,9 +35,8 @@ mapart_generate_img_border: false
 mapart_generate_img_border_color1: -14236 # Yellow
 mapart_generate_img_border_color2: 3288370 # Gray
 
-#mapart_database: true
-#mapart_database_share_contact: true
 
+#========== Visuals ==========#
 map_highlight_in_tooltip: true
 map_highlight_in_hotbarhud: true
 map_highlight_in_itemframe: true

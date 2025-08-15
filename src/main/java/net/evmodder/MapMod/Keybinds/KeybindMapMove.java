@@ -2,13 +2,14 @@ package net.evmodder.MapMod.Keybinds;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.TreeSet;
 import java.util.stream.IntStream;
 import org.lwjgl.glfw.GLFW;
 import net.evmodder.MapMod.Main;
 import net.evmodder.MapMod.MapRelationUtils;
-import net.evmodder.MapMod.Keybinds.ClickUtils.ClickEvent;
 import net.evmodder.MapMod.MapRelationUtils.RelatedMapsData;
+import net.evmodder.MapMod.Keybinds.ClickUtils.ClickEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -117,10 +118,11 @@ public final class KeybindMapMove{
 				? (countsInInv.size() == 2 && cantMergeIntoShulk == 0)
 				: (countsInShulk.size() == 2 && smallerSlotsAtStart && (cantMergeIntoInv == 0 || numInInv == 0)));
 //		Main.LOGGER.info("MapMove: selectiveMove: "+selectiveMove);
-		client.player.sendMessage(Text.literal("MapMove: selectiveMove="+selectiveMove), true);
+		client.player.sendMessage(Text.literal("MapMove: selectiveMove="+selectiveMove+", toShulk="+moveToShulk), true);
+//		client.player.sendMessage(Text.literal("MapMove: selectiveMove="+selectiveMove+", toShulk="+moveToShulk), false);
 
 		ArrayDeque<ClickEvent> clicks = new ArrayDeque<>();
-		HashMap<ClickEvent, Integer> reserveClicks = new HashMap<>();
+		IdentityHashMap<ClickEvent, Integer> reserveClicks = new IdentityHashMap<>();
 		if(moveToShulk) for(int i=27, j=0; i<63; ++i){
 			if(slots[i].getItem() != Items.FILLED_MAP) continue;
 			if(isFillerMap(slots, slots[i], client.world)) continue;
@@ -131,6 +133,7 @@ public final class KeybindMapMove{
 				if(numInShulk == 0){
 					if(Main.clickUtils.MAX_CLICKS >= 2) reserveClicks.put(clicks.peekLast(), 2);
 					while(!slots[j].isEmpty()) ++j;
+					if(j >= 27) Main.LOGGER.error("MapMove: inv -> inv! (Should be unreachable)");
 					clicks.add(new ClickEvent(j++, 0, SlotActionType.PICKUP)); //left-click: place all into next empty slot
 					continue;
 				}
