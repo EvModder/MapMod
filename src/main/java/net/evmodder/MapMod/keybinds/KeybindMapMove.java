@@ -1,4 +1,4 @@
-package net.evmodder.MapMod.Keybinds;
+package net.evmodder.MapMod.keybinds;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -7,9 +7,10 @@ import java.util.TreeSet;
 import java.util.stream.IntStream;
 import org.lwjgl.glfw.GLFW;
 import net.evmodder.MapMod.Main;
+import net.evmodder.MapMod.MapColorUtils;
 import net.evmodder.MapMod.MapRelationUtils;
 import net.evmodder.MapMod.MapRelationUtils.RelatedMapsData;
-import net.evmodder.MapMod.Keybinds.ClickUtils.ClickEvent;
+import net.evmodder.MapMod.keybinds.ClickUtils.ClickEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -30,7 +31,7 @@ public final class KeybindMapMove{
 	private final boolean isFillerMap(ItemStack[] slots, ItemStack stack, World world){
 		if(!Main.skipTransparentMaps) return false;
 		final MapState state = FilledMapItem.getMapState(stack, world);
-		if(state == null || !MapRelationUtils.isTransparentOrStone(state.colors)) return false;
+		if(state == null || !MapColorUtils.isTransparentOrStone(state.colors)) return false;
 		if(stack.getCustomName() == null) return true;
 		final RelatedMapsData data = MapRelationUtils.getRelatedMapsByName(slots, stack.getCustomName().getString(), stack.getCount(), state.locked, world);
 		return data.slots().stream().map(i -> slots[i].getCustomName().getLiteralString()).distinct().count() <= 1;
@@ -118,7 +119,7 @@ public final class KeybindMapMove{
 				? (countsInInv.size() == 2 && cantMergeIntoShulk == 0)
 				: (countsInShulk.size() == 2 && smallerSlotsAtStart && (cantMergeIntoInv == 0 || numInInv == 0)));
 //		Main.LOGGER.info("MapMove: selectiveMove: "+selectiveMove);
-		client.player.sendMessage(Text.literal("MapMove: selectiveMove="+selectiveMove+", toShulk="+moveToShulk), true);
+//		client.player.sendMessage(Text.literal("MapMove: selectiveMove="+selectiveMove+", toShulk="+moveToShulk), true);
 //		client.player.sendMessage(Text.literal("MapMove: selectiveMove="+selectiveMove+", toShulk="+moveToShulk), false);
 
 		ArrayDeque<ClickEvent> clicks = new ArrayDeque<>();

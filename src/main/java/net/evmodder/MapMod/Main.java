@@ -5,9 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.evmodder.EvLib.FileIO;
-import net.evmodder.MapMod.Events.*;
-import net.evmodder.MapMod.Keybinds.*;
 import net.evmodder.MapMod.commands.*;
+import net.evmodder.MapMod.events.*;
+import net.evmodder.MapMod.keybinds.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
@@ -27,7 +27,9 @@ public class Main implements ClientModInitializer{
 	private static HashMap<String, String> config;
 
 	public static ClickUtils clickUtils;
-	public static boolean mapHighlightHUD, mapHighlightIFrame, mapHighlightHandledScreen, skipTransparentMaps, skipMonoColorMaps, invisItemFramesWithMaps=true;
+	public static boolean mapHighlightHUD, mapHighlightIFrame, mapHighlightHandledScreen;
+	public static boolean invisItemFramesWithMaps=true, invisItemFramesWithMapsSemiTransparentOnly=false;
+	public static boolean mapartDb, mapartDbContact, totemShowTotalCount, skipTransparentMaps, skipMonoColorMaps;
 
 	public static int MAP_COLOR_UNLOADED = 13150930;
 	public static int MAP_COLOR_UNLOCKED = 14692709;
@@ -77,6 +79,8 @@ public class Main implements ClientModInitializer{
 		boolean keybindMapArtLoad=false, keybindMapArtCopy=false, keybindMapArtMove=false, keybindMapArtBundleStow=false, keybindMapArtBundleStowReverse=false;
 		boolean mapMoveIgnoreAirPockets=true;
 		boolean mapPlaceHelper=false, mapPlaceHelperByName=false, mapPlaceHelperByImg=false, mapHighlightTooltip=false;
+		boolean mapMetadataTooltip=false, mapMdStaircase=false, mapMdMaterial=false, mapMdNumColors=false, mapMdTransparency=false, mapMdNoobline=false,
+				mapMdPercentCarpet=false, mapMdPercentStaircase=false;
 		boolean mapWallCmd=false, mapWallBorder=false;
 		int mapWallBorderColor1=-14236, mapWallBorderColor2=-8555656, mapWallUpscale=128;
 
@@ -91,7 +95,17 @@ public class Main implements ClientModInitializer{
 //				case "max_clicks_per_tick": clicks_per_gt = Integer.parseInt(value); break;
 //				case "millis_between_clicks": millis_between_clicks = Integer.parseInt(value); break;
 
+				case "map_state_cache": if(!value.equalsIgnoreCase("false")) new MapStateInventoryCacher(); break;
 				case "invis_itemframes_with_maps": invisItemFramesWithMaps = !value.equalsIgnoreCase("false"); break;
+				case "invis_itemframes_with_maps.semi_transparent_only": invisItemFramesWithMapsSemiTransparentOnly = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip": mapMetadataTooltip = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.staircase": mapMdStaircase = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.material": mapMdMaterial = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.percent_carpet": mapMdPercentCarpet = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.percent_staircase": mapMdPercentStaircase = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.num_colors": mapMdNumColors = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.transparency": mapMdTransparency = !value.equalsIgnoreCase("false"); break;
+				case "map_metadata_in_tooltip.noobline": mapMdNoobline = !value.equalsIgnoreCase("false"); break;
 				case "map_highlight_in_tooltip": mapHighlightTooltip = !value.equalsIgnoreCase("false"); break;
 				case "map_highlight_in_hotbarhud": mapHighlightHUD = !value.equalsIgnoreCase("false"); break;
 				case "map_highlight_in_itemframe": mapHighlightIFrame = !value.equalsIgnoreCase("false"); break;
@@ -147,6 +161,10 @@ public class Main implements ClientModInitializer{
 				ItemFrameHighlightUpdater.onUpdateTick(client);
 				if(mapHighlightHandledScreen/* || mapHighlightTooltip*/) ContainerHighlightUpdater.onUpdateTick(client);
 			});
+		}
+
+		if(mapMetadataTooltip){
+			new TooltipMapLoreMetadata(mapMdStaircase, mapMdMaterial, mapMdNumColors, mapMdTransparency, mapMdNoobline, mapMdPercentCarpet, mapMdPercentStaircase);
 		}
 	}
 }

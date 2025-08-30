@@ -1,4 +1,4 @@
-package net.evmodder.MapMod.Keybinds;
+package net.evmodder.MapMod.keybinds;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -8,9 +8,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.Fraction;
 import org.lwjgl.glfw.GLFW;
 import net.evmodder.MapMod.Main;
+import net.evmodder.MapMod.MapColorUtils;
 import net.evmodder.MapMod.MapRelationUtils;
-import net.evmodder.MapMod.Keybinds.ClickUtils.ClickEvent;
 import net.evmodder.MapMod.MapRelationUtils.RelatedMapsData;
+import net.evmodder.MapMod.keybinds.ClickUtils.ClickEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
@@ -36,7 +37,7 @@ public final class KeybindMapMoveBundle{
 	private final boolean isFillerMap(ItemStack[] slots, ItemStack stack, World world){
 		if(!Main.skipTransparentMaps) return false;
 		final MapState state = FilledMapItem.getMapState(stack, world);
-		if(state == null || !MapRelationUtils.isTransparentOrStone(state.colors)) return false;
+		if(state == null || !MapColorUtils.isTransparentOrStone(state.colors)) return false;
 		if(stack.getCustomName() == null) return true;
 		final String name = stack.getCustomName().getLiteralString();
 		if(name == null) return true;

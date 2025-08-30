@@ -2,7 +2,7 @@ package net.evmodder.MapMod.mixin;
 
 import net.evmodder.MapMod.Main;
 import net.evmodder.MapMod.MapGroupUtils;
-import net.evmodder.MapMod.Events.ItemFrameHighlightUpdater;
+import net.evmodder.MapMod.events.ItemFrameHighlightUpdater;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.component.DataComponentTypes;

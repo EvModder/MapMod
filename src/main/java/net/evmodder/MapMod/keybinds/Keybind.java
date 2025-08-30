@@ -1,4 +1,4 @@
-package net.evmodder.MapMod.Keybinds;
+package net.evmodder.MapMod.keybinds;
 
 import java.util.HashSet;
 import java.util.function.Function;

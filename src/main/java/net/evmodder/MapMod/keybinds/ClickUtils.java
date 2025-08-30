@@ -1,10 +1,11 @@
-package net.evmodder.MapMod.Keybinds;
+package net.evmodder.MapMod.keybinds;
 
 import java.util.Arrays;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Function;
+import net.evmodder.EvLib.TextUtils;
 import net.evmodder.MapMod.Main;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.screen.slot.SlotActionType;
@@ -20,7 +21,7 @@ public class ClickUtils{
 	private final int[] tickDurationArr;
 	private int tickDurIndex, sumClicksInDuration;
 	private long lastTick;
-	private final int OUTTA_CLICKS_COLOR = 15764490, SYNC_ID_CHANGED_COLOR = 16733525;
+	public final int OUTTA_CLICKS_COLOR = 15764490, SYNC_ID_CHANGED_COLOR = 16733525;
 
 	public ClickUtils(final int MAX_CLICKS, int FOR_TICKS){
 		if(MAX_CLICKS > 100_000){
@@ -52,7 +53,7 @@ public class ClickUtils{
 			tickDurationArr[tickDurIndex] = 0;
 			++lastTick;
 		}
-		if(type != null){// null is a special flag to update/remove old clicks without adding a new click
+		if(type != null && sumClicksInDuration < MAX_CLICKS){ // null is a special flag to update/remove old clicks without adding a new click
 			++tickDurationArr[tickDurIndex];
 			++sumClicksInDuration;
 		}
@@ -64,8 +65,7 @@ public class ClickUtils{
 	public final void executeClicks(Queue<ClickEvent> clicks, Function<ClickEvent, Boolean> canProceed, Runnable onComplete){
 		if(clickOpOngoing){
 			Main.LOGGER.warn("executeClicks() already has an ongoing operation");
-			MinecraftClient.getInstance().player.sendMessage(
-					Text.literal("Clicks cancelled: current operation needs to finish before starting a new one"), true);
+			MinecraftClient.getInstance().player.sendMessage(Text.literal("Clicks cancelled: current operation needs to finish before starting a new one"), true);
 			onComplete.run();
 			return;
 		}
@@ -89,11 +89,17 @@ public class ClickUtils{
 					client.player.sendMessage(Text.literal("Clicks cancelled: container ID changed").withColor(SYNC_ID_CHANGED_COLOR), true);
 					cancel(); clickOpOngoing=false; onComplete.run(); return;
 				}
+				if(clicks.isEmpty()){
+					if(waitedForClicks) client.player.sendMessage(Text.literal("Clicks finished early!"), true);
+					cancel(); clickOpOngoing=false; onComplete.run(); return;
+				}
 				//final int availableClicks = MAX_CLICKS - addClick(null);
 				//for(int i=0; i<availableClicks; ++i){
 				client.executeSync(()->{
+//					double clicksPerTick = ((double)MAX_CLICKS)/tickDurationArr.length;
+//					double secondsleft = (clicks.size()/clicksPerTick)/20;
 					while(addClick(null) < MAX_CLICKS){
-						if(!canProceed.apply(clicks.peek())) return;
+						if(!canProceed.apply(clicks.peek())){waitedForClicks = true; return;}
 						ClickEvent click = clicks.remove();
 						try{
 							//Main.LOGGER.info("Executing click: "+click.syncId+","+click.slotId+","+click.button+","+click.actionType);
@@ -109,10 +115,13 @@ public class ClickUtils{
 						}
 					}
 					waitedForClicks = true;
-					client.player.sendMessage(Text.literal("Waiting for available clicks...").withColor(OUTTA_CLICKS_COLOR), true);
+					final int msLeft = tickDurationArr == null ? 0 : (int)(tickDurationArr.length
+							+ clicks.size()/(((double)MAX_CLICKS)/tickDurationArr.length))*50;
+					client.player.sendMessage(Text.literal("Waiting for available clicks... ("+clicks.size()//+"c"
+							+(msLeft > 5000 ? ", ~"+TextUtils.formatTime(msLeft) : "")+")").withColor(OUTTA_CLICKS_COLOR), true);
 				});
 			}
-		}, 1l, 51l);
+		}, 1l, 27l/*51l*/);
 	}
 
 

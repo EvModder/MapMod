@@ -1,4 +1,4 @@
-package net.evmodder.MapMod.Events;
+package net.evmodder.MapMod.events;
 
 import java.util.List;
 import net.minecraft.item.Item.TooltipContext;

@@ -1,10 +1,10 @@
-package net.evmodder.MapMod.Events;
+package net.evmodder.MapMod.events;
 
 import java.util.ArrayDeque;
 import net.evmodder.MapMod.Main;
 import net.evmodder.MapMod.MapRelationUtils;
-import net.evmodder.MapMod.Keybinds.ClickUtils.ClickEvent;
 import net.evmodder.MapMod.MapRelationUtils.RelatedMapsData;
+import net.evmodder.MapMod.keybinds.ClickUtils.ClickEvent;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.player.PlayerEntity;

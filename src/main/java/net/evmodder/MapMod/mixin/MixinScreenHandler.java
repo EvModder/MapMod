@@ -1,6 +1,6 @@
 package net.evmodder.MapMod.mixin;
 
-import net.evmodder.MapMod.Events.MapClickMoveNeighbors;
+import net.evmodder.MapMod.events.MapClickMoveNeighbors;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;

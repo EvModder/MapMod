@@ -1,7 +1,7 @@
 package net.evmodder.MapMod.mixin;
 
-import net.evmodder.MapMod.Events.ContainerHighlightUpdater;
-import net.evmodder.MapMod.Keybinds.Keybind;
+import net.evmodder.MapMod.events.ContainerHighlightUpdater;
+import net.evmodder.MapMod.keybinds.Keybind;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
