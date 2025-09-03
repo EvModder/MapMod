@@ -23,7 +23,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
@@ -174,20 +173,20 @@ public final class KeybindMapLoad{
 
 		Main.LOGGER.info("MapLoad: STARTED, clicks: "+clicks.size()+", extraPutBackIndex: "+extraPutBackIndex);
 		Main.clickUtils.executeClicks(clicks,
-			c->{
+			_->{
 				if(client.player == null || client.world == null) return true;
 //				if(isUnloadedMapArt(/*client.player.clientWorld*/client.world, item)) return false;
 				if(clickIndex % hbButtons.length != 0 && clickIndex != extraPutBackIndex){++clickIndex; return true;}
-				if(Main.clickUtils.MAX_CLICKS-Main.clickUtils.addClick(null) < MAX_BATCH_SIZE){
-					client.player.sendMessage(Text.literal("MapLoad: Waiting for available clicks... ("+clicks.size()+")")
-							.withColor(KeybindMapCopy.WAITING_FOR_CLICKS_COLOR), true);
-					return false;
-				}
+				if(Main.clickUtils.MAX_CLICKS-Main.clickUtils.addClick(null) < MAX_BATCH_SIZE) return false; // Wait for clicks
+
 				if((clickIndex/hbButtons.length)%2 == 0 && clickIndex < extraPutBackIndex){++clickIndex; return true;} // Moving TO hotbar
-				ItemStack item = client.player.getInventory().getStack(c.button());
+//				ItemStack item = client.player.getInventory().getStack(c.button());
 				//if(!isLoadedMapArt(client.world, item)){ // Weird issue rn with non-maps getting moved around? (bundles?)
-				if(isUnloadedMapArt(client.world, item)){
-					Main.LOGGER.info("still waiting for map state to load from hotbar slot: "+c.button());
+				//if(isUnloadedMapArt(client.world, s){
+				// Ugh just wait if any unloaded map in hotbar(or inv)
+				if(client.player.getInventory().main.stream().anyMatch(s -> isUnloadedMapArt(client.world, s))){
+					Main.LOGGER.info("MapLoad: still waiting for map state to load");
+//					Main.LOGGER.info("MapLoad: still waiting for map state to load from hotbar slot: "+c.button());
 					return false;
 				}
 				else if(stateWaitStart == 0){stateWaitStart = System.currentTimeMillis(); return false;}

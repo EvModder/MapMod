@@ -99,19 +99,26 @@ public class ClickUtils{
 //					double clicksPerTick = ((double)MAX_CLICKS)/tickDurationArr.length;
 //					double secondsleft = (clicks.size()/clicksPerTick)/20;
 					while(addClick(null) < MAX_CLICKS){
-						if(!canProceed.apply(clicks.peek())){waitedForClicks = true; return;}
-						ClickEvent click = clicks.remove();
-						try{
-							//Main.LOGGER.info("Executing click: "+click.syncId+","+click.slotId+","+click.button+","+click.actionType);
-							client.interactionManager.clickSlot(syncId, click.slotId, click.button, click.actionType, client.player);
-						}
-						catch(NullPointerException e){
-							Main.LOGGER.error("executeClicks() failed due to null client. Clicks left: "+clicks.size()+", sumClicksInDuration: "+sumClicksInDuration);
-							clicks.clear();
+						if(!clicks.isEmpty()){
+							if(!canProceed.apply(clicks.peek())) break;//{waitedForClicks = true; return;}
+							ClickEvent click = clicks.remove();
+							try{
+								//Main.LOGGER.info("Executing click: "+click.syncId+","+click.slotId+","+click.button+","+click.actionType);
+								client.interactionManager.clickSlot(syncId, click.slotId, click.button, click.actionType, client.player);
+							}
+							catch(NullPointerException e){
+								Main.LOGGER.error("executeClicks() failed due to null client. Clicks left: "+clicks.size()+", sumClicksInDuration: "+sumClicksInDuration);
+								clicks.clear();
+							}
 						}
 						if(clicks.isEmpty()){
-							if(waitedForClicks) client.player.sendMessage(Text.literal("Clicks done!"), true);
-							cancel(); clickOpOngoing=false; onComplete.run(); return;
+							cancel();
+							if(clickOpOngoing){
+								clickOpOngoing=false;
+								if(waitedForClicks) client.player.sendMessage(Text.literal("Clicks done!"), true);
+								onComplete.run();
+							}
+							return;
 						}
 					}
 					waitedForClicks = true;
