@@ -11,14 +11,15 @@ import net.evmodder.MapMod.keybinds.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
+
 // gradle genSources/eclipse/cleanloom/--stop
 //MC source will be in ~/.gradle/caches/fabric-loom or ./.gradle/loom-cache
 // gradle build --refresh-dependencies
 // gradle migrateMappings --mappings "1.21.4+build.8"
 // Fix broken eclipse build paths after updating loom,fabric-api,version in configs: gradle eclipse
 public class Main implements ClientModInitializer{
-
-	public static final String MOD_ID = "mapmod";
+	// Reference variables
+	public static final String MOD_ID = "keybound";
 	public static final String configFilename = MOD_ID+".txt";
 	//public static final String MOD_NAME = "KeyBound";
 	//public static final String MOD_VERSION = "@MOD_VERSION@";
@@ -29,7 +30,7 @@ public class Main implements ClientModInitializer{
 	public static ClickUtils clickUtils;
 	public static boolean mapHighlightHUD, mapHighlightIFrame, mapHighlightHandledScreen;
 	public static boolean invisItemFramesWithMaps=true, invisItemFramesWithMapsSemiTransparentOnly=false;
-	public static boolean mapartDb, mapartDbContact, totemShowTotalCount, skipTransparentMaps, skipMonoColorMaps;
+	public static boolean mapartDb, mapartDbContact, skipTransparentMaps, skipMonoColorMaps;
 
 	public static int MAP_COLOR_UNLOADED = 13150930;
 	public static int MAP_COLOR_UNLOCKED = 14692709;
@@ -75,21 +76,24 @@ public class Main implements ClientModInitializer{
 		loadConfig();
 		//=================================== Loading config features
 		//int clicksInDuration = 190, durationTicks = 75;
-		int clicksInDuration = 1, durationTicks = 1;
+		int clicksInDuration = 78, durationTicks = 90;
 		boolean keybindMapArtLoad=false, keybindMapArtCopy=false, keybindMapArtMove=false, keybindMapArtBundleStow=false, keybindMapArtBundleStowReverse=false;
+		int keybindMapArtBundleStowMax = 64;
 		boolean mapMoveIgnoreAirPockets=true;
-		boolean mapPlaceHelper=false, mapPlaceHelperByName=false, mapPlaceHelperByImg=false, mapHighlightTooltip=false;
+		boolean mapPlaceHelper=false, mapPlaceHelperAuto=false, mapPlaceHelperByName=true, mapPlaceHelperByImg=true, mapHighlightTooltip=false;
+		boolean iFramePlacer=false, iFramePlacerMatchBlock=true, iFramePlacerMustConnect=true;
 		boolean mapMetadataTooltip=false, mapMdStaircase=false, mapMdMaterial=false, mapMdNumColors=false, mapMdTransparency=false, mapMdNoobline=false,
 				mapMdPercentCarpet=false, mapMdPercentStaircase=false;
 		boolean mapWallCmd=false, mapWallBorder=false;
 		int mapWallBorderColor1=-14236, mapWallBorderColor2=-8555656, mapWallUpscale=128;
 
 		//config.forEach((key, value) -> {
-		for(final String key : config.keySet()){
-			final String value = config.get(key);
+		for(String key : config.keySet()){
+			String value = config.get(key);
 			switch(key){
 //				case "mapart_database": mapartDb = !value.equalsIgnoreCase("false"); break;
 //				case "mapart_database_share_contact": mapartDbContact = !value.equalsIgnoreCase("false"); break;
+
 				case "limiter_clicks_in_duration": clicksInDuration = Integer.parseInt(value); break;
 				case "limiter_duration_ticks": durationTicks = Integer.parseInt(value); break;
 //				case "max_clicks_per_tick": clicks_per_gt = Integer.parseInt(value); break;
@@ -126,14 +130,17 @@ public class Main implements ClientModInitializer{
 				case "keybind.mapart.load": keybindMapArtLoad = !value.equalsIgnoreCase("false"); break;
 				case "keybind.mapart.move.bundle": keybindMapArtBundleStow = !value.equalsIgnoreCase("false"); break;
 				case "keybind.mapart.move.bundle.reverse": keybindMapArtBundleStowReverse = !value.equalsIgnoreCase("false"); break;
+				case "keybind.mapart.move.bundle.max": keybindMapArtBundleStowMax = Integer.parseInt(value); break;
 				case "keybind.mapart.move.3x9": keybindMapArtMove = !value.equalsIgnoreCase("false"); break;
 				case "keybind.mapart.move_3x9.ignore_air_pockets": mapMoveIgnoreAirPockets = !value.equalsIgnoreCase("false"); break;
 				case "mapart_placement_helper": mapPlaceHelper=!value.equalsIgnoreCase("false"); break;
-				case "mapart_placement_helper_use_name": mapPlaceHelperByName=!value.equalsIgnoreCase("false"); break;
-				case "mapart_placement_helper_use_image": mapPlaceHelperByImg=!value.equalsIgnoreCase("false"); break;
-				case "mapart_group_include_unlocked":
-					MapGroupUtils.INCLUDE_UNLOCKED = !value.equalsIgnoreCase("false");
-					break;
+				case "mapart_placement_helper.use_name": mapPlaceHelperByName=!value.equalsIgnoreCase("false"); break;
+				case "mapart_placement_helper.use_image": mapPlaceHelperByImg=!value.equalsIgnoreCase("false"); break;
+				case "mapart_placement_helper.autoplace": mapPlaceHelperAuto=!value.equalsIgnoreCase("false"); break;
+				case "iframe_placement_helper": iFramePlacer = !value.equalsIgnoreCase("false"); break;
+				case "iframe_placement_helper.must_match_block": iFramePlacerMatchBlock = !value.equalsIgnoreCase("false"); break;
+				case "iframe_placement_helper.must_connect": iFramePlacerMustConnect = !value.equalsIgnoreCase("false"); break;
+				case "mapart_group_include_unlocked": MapGroupUtils.INCLUDE_UNLOCKED = !value.equalsIgnoreCase("false"); break;
 				case "mapart_group_command": new CommandMapArtGroup(); break;
 				case "mapart_generate_img_upscale_to": mapWallUpscale=Integer.parseInt(value); break;
 				case "mapart_generate_img_border": mapWallBorder=!value.equalsIgnoreCase("false"); break;
@@ -146,11 +153,14 @@ public class Main implements ClientModInitializer{
 			}
 		}
 		clickUtils = new ClickUtils(clicksInDuration, durationTicks);
+
 		if(keybindMapArtLoad) new KeybindMapLoad();
 		if(keybindMapArtCopy) new KeybindMapCopy();
 		if(keybindMapArtMove) new KeybindMapMove(mapMoveIgnoreAirPockets);
-		if(keybindMapArtBundleStow || keybindMapArtBundleStowReverse) new KeybindMapMoveBundle(keybindMapArtBundleStow, keybindMapArtBundleStowReverse);
-		if(mapPlaceHelper) new MapHandRestock(mapPlaceHelperByName, mapPlaceHelperByImg);
+		if(keybindMapArtBundleStow || keybindMapArtBundleStowReverse)
+			new KeybindMapMoveBundle(keybindMapArtBundleStow, keybindMapArtBundleStowReverse, keybindMapArtBundleStowMax);
+		if(mapPlaceHelper) new MapHandRestock(mapPlaceHelperByName, mapPlaceHelperByImg, mapPlaceHelperAuto);
+		if(iFramePlacer) new ItemFrameAutoPlacer(iFramePlacerMatchBlock, iFramePlacerMustConnect);
 
 		if(mapWallCmd) new CommandExportMapImg(mapWallUpscale, mapWallBorder, mapWallBorderColor1, mapWallBorderColor2);
 
