@@ -1,10 +1,11 @@
 package net.evmodder.MapMod.events;
 
 import java.util.ArrayDeque;
-import net.evmodder.MapMod.Main;
+import java.util.Arrays;
 import net.evmodder.MapMod.MapRelationUtils;
 import net.evmodder.MapMod.MapRelationUtils.RelatedMapsData;
 import net.evmodder.MapMod.keybinds.ClickUtils.ClickEvent;
+import net.evmodder.MapMod.Main;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.player.PlayerEntity;
@@ -40,7 +41,7 @@ public abstract class MapClickMoveNeighbors{
 		final MapState state = mapId == null ? null : player.getWorld().getMapState(mapId);
 		final Boolean locked = state == null ? null : state.locked;
 		//Main.LOGGER.info("MapMoveClick: locked="+locked);
-		final RelatedMapsData data =  MapRelationUtils.getRelatedMapsByName(slots, movedName, mapMoved.getCount(), locked, player.getWorld());
+		final RelatedMapsData data =  MapRelationUtils.getRelatedMapsByName(Arrays.asList(slots), movedName, mapMoved.getCount(), locked, player.getWorld());
 		if(data.prefixLen() == -1){
 			Main.LOGGER.info("MapMoveClick: related-name maps not found");
 			return;
